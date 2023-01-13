@@ -35,7 +35,7 @@
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
-import { checkEmail, checkPassword } from "../utils/checkText";
+import { checkEmail, checkPassword } from "../util/checkText";
 import { RouterLink } from "vue-router";
 import { createAccount } from "@/api/users";
 

@@ -27,9 +27,8 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import { RouterLink } from "vue-router";
-import { checkEmail, checkPassword } from "../utils/checkText";
+import { checkEmail, checkPassword } from "../util/checkText";
 import { getLogin } from "@/api/users";
-import { LoginType } from "@/interfaces/user";
 
 export default defineComponent({
   components: {
@@ -48,12 +47,7 @@ export default defineComponent({
       e.preventDefault();
       if (checkEmail.test(this.email) && checkPassword.test(this.password)) {
         getLogin(this.email, this.password)
-          .then((data) => {
-            localStorage.setItem(
-              "todo-jwt",
-              JSON.stringify((data as LoginType).data.token)
-            );
-          })
+          .then((data) => console.log(data))
           .catch((err) => console.log(err));
       } else {
         this.isEmail = false;

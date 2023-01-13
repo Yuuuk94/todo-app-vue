@@ -1,4 +1,3 @@
-import { LoginType } from "@/interfaces/user";
 import { client } from ".";
 
 // login api
@@ -8,7 +7,7 @@ export const getLogin = async (email, password) => {
       email: email,
       password: password,
     })
-    .then((response) => response as LoginType)
+    .then((response) => response)
     .catch((err) => console.log(err));
 };
 
