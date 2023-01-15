@@ -1,23 +1,24 @@
 <script lang="ts">
-import { client } from "../api";
 import { defineComponent } from "vue";
 import { useMutation, useQuery } from "vue-query";
-import { NewTodoType } from "../interfaces/todos";
-import { createNewTodo } from "../api/todos";
+import { NewTodoType, TodoDataType } from "../interfaces/todos";
+import { createNewTodo, getAllTodoList } from "../api/todos";
 
 export default defineComponent({
   setup() {
-    const jwt = localStorage.getItem("jwt");
-    const { data } = useQuery("todo", () => {
-      client.get("/todos", { headers: { Authorization: jwt } });
-    });
+    const { data, status } = useQuery("todo", getAllTodoList);
 
-    // const { mutate } = useMutation((new:NewTodoType) => createNewTodo(jwt,new));
-    return { jwt, data };
+    const { isLoading, isError, error, mutate } = useMutation(
+      (newTodo: NewTodoType) => {
+        return createNewTodo(newTodo);
+      }
+    );
+
+    return { status, data, mutate };
   },
   data() {
     return {
-      items: this.data,
+      // items: this.data,
       newTitle: "",
       newContent: "",
     };
@@ -26,11 +27,11 @@ export default defineComponent({
     onSave(e) {
       e.preventDefault();
       if ((this.newTitle.length > 0, this.newContent.length > 0)) {
-        console.log(this.newTitle, this.newContent);
-        // this.mutate(this.jst, {
-        //   title: this.newTitle,
-        //   content: this.newContent,
-        // });
+        const params = {
+          title: this.newTitle,
+          content: this.newContent,
+        };
+        this.mutate(params);
       }
     },
   },
@@ -39,8 +40,19 @@ export default defineComponent({
 <template lang="">
   <div>
     <h2>todo list page</h2>
-    <ul>
-      <li v-for="item in items" :key="item.title">{{ item }}</li>
+    <ul v-if="status === 'loading'">
+      <li>로딩중</li>
+    </ul>
+    <ul v-else-if="status === 'success'">
+      <li v-for="item in data.data.data" :key="item.title">
+        <span>
+          {{ item.title }}
+        </span>
+        <span>
+          {{ item.content }}
+        </span>
+        <span> x </span>
+      </li>
     </ul>
     <div>
       <h3>새로등록</h3>

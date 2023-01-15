@@ -5,16 +5,28 @@ import { RouterLink } from "vue-router";
 import { createAccount } from "../api/users";
 import { useMutation } from "vue-query";
 import { LoginParams, LoginType } from "../interfaces/user";
+import { authState } from "../store/atom";
+import { useRecoilState } from "vue-recoil";
 
 export default defineComponent({
   components: {
     RouterLink,
   },
   setup() {
+    // api vue query
     const { isLoading, isError, error, isSuccess, mutate } = useMutation(
       (account: LoginParams) => createAccount(account)
     );
-    return { isLoading, isError, error, isSuccess, mutate };
+
+    // jwt recoil state
+    let [auth, setAuth] = useRecoilState(authState);
+    const getAuth = (newAuth) => {
+      if (auth !== newAuth) {
+        setAuth(newAuth);
+        localStorage.setItem("auth", newAuth);
+      }
+    };
+    return { isLoading, isError, error, isSuccess, mutate, getAuth };
   },
   data() {
     return {
@@ -38,7 +50,7 @@ export default defineComponent({
           { email: this.email, password: this.password },
           {
             onSuccess: (data: LoginType) => {
-              localStorage.setItem("jwt", data.data.token);
+              this.getAuth(data.data.token);
               this.$router.push("/");
             },
           }
