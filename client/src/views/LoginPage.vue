@@ -1,3 +1,50 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+import { RouterLink } from "vue-router";
+import { checkEmail, checkPassword } from "../util/checkText";
+import { fetchLogin } from "../api/users";
+import { LoginParams, LoginType } from "../interfaces/user";
+import { useMutation } from "vue-query";
+
+export default defineComponent({
+  components: {
+    RouterLink,
+  },
+  setup() {
+    const { isLoading, isError, error, isSuccess, mutate } = useMutation(
+      (account: LoginParams) => fetchLogin(account)
+    );
+    return { isLoading, isError, error, isSuccess, mutate };
+  },
+  data() {
+    return {
+      email: "",
+      password: "",
+      isEmail: true,
+      isPassword: true,
+    };
+  },
+  methods: {
+    onLogin(e) {
+      e.preventDefault();
+      if (checkEmail.test(this.email) && checkPassword.test(this.password)) {
+        this.mutate(
+          { email: this.email, password: this.password },
+          {
+            onSuccess: (data: LoginType) => {
+              localStorage.setItem("jwt", data.data.token);
+              this.$router.push("/");
+            },
+          }
+        );
+      } else {
+        this.isEmail = false;
+        this.isPassword = false;
+      }
+    },
+  },
+});
+</script>
 <template>
   <div>
     <h2>Login!</h2>
@@ -24,37 +71,4 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
-import { RouterLink } from "vue-router";
-import { checkEmail, checkPassword } from "../util/checkText";
-import { getLogin } from "@/api/users";
-
-export default defineComponent({
-  components: {
-    RouterLink,
-  },
-  data() {
-    return {
-      email: "",
-      password: "",
-      isEmail: true,
-      isPassword: true,
-    };
-  },
-  methods: {
-    onLogin(e) {
-      e.preventDefault();
-      if (checkEmail.test(this.email) && checkPassword.test(this.password)) {
-        getLogin(this.email, this.password)
-          .then((data) => console.log(data))
-          .catch((err) => console.log(err));
-      } else {
-        this.isEmail = false;
-        this.isPassword = false;
-      }
-    },
-  },
-});
-</script>
 <style></style>

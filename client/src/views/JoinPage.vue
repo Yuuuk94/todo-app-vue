@@ -1,3 +1,57 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+import { checkEmail, checkPassword } from "../util/checkText";
+import { RouterLink } from "vue-router";
+import { createAccount } from "../api/users";
+import { useMutation } from "vue-query";
+import { LoginParams, LoginType } from "../interfaces/user";
+
+export default defineComponent({
+  components: {
+    RouterLink,
+  },
+  setup() {
+    const { isLoading, isError, error, isSuccess, mutate } = useMutation(
+      (account: LoginParams) => createAccount(account)
+    );
+    return { isLoading, isError, error, isSuccess, mutate };
+  },
+  data() {
+    return {
+      email: "",
+      password: "",
+      passwordAgain: "",
+      isEmail: true,
+      isPassword: true,
+      isPasswordAgain: true,
+    };
+  },
+  methods: {
+    onSignUp(e) {
+      e.preventDefault();
+      if (
+        checkEmail.test(this.email) &&
+        checkPassword.test(this.password) &&
+        this.password === this.passwordAgain
+      ) {
+        this.mutate(
+          { email: this.email, password: this.password },
+          {
+            onSuccess: (data: LoginType) => {
+              localStorage.setItem("jwt", data.data.token);
+              this.$router.push("/");
+            },
+          }
+        );
+      } else {
+        this.isEmail = false;
+        this.isPassword = false;
+        this.isPasswordAgain = false;
+      }
+    },
+  },
+});
+</script>
 <template>
   <div>
     <h2>Sign Up!</h2>
@@ -33,44 +87,4 @@
     </div>
   </div>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
-import { checkEmail, checkPassword } from "../util/checkText";
-import { RouterLink } from "vue-router";
-import { createAccount } from "@/api/users";
-
-export default defineComponent({
-  components: {
-    RouterLink,
-  },
-  data() {
-    return {
-      email: "",
-      password: "",
-      passwordAgain: "",
-      isEmail: true,
-      isPassword: true,
-      isPasswordAgain: true,
-    };
-  },
-  methods: {
-    onSignUp(e) {
-      e.preventDefault();
-      if (
-        checkEmail.test(this.email) &&
-        checkPassword.test(this.password) &&
-        this.password === this.passwordAgain
-      ) {
-        createAccount(this.email, this.password)
-          .then((data) => console.log(data))
-          .catch((err) => console.log(err));
-      } else {
-        this.isEmail = false;
-        this.isPassword = false;
-        this.isPasswordAgain = false;
-      }
-    },
-  },
-});
-</script>
 <style lang=""></style>
